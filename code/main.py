@@ -58,6 +58,8 @@ class Game():
 
         # overlays
         self.dialog_tree: DialogTree | None = None
+        self.monster_index = MonsterIndex(self.player_monsters,self.fonts,self.monster_frames)
+        self.index_open = False
 
     def import_assets(self):
         self.tmx_maps = tmx_importer('data','maps')
@@ -147,13 +149,17 @@ class Game():
         if not self.dialog_tree and not self.player.character_approaching:
             keys = pygame.key.get_just_pressed()
             character_list: list[Character] = self.character_sprites.sprites()
-            if keys[pygame.K_SPACE]:
+            if keys[pygame.K_SPACE] and not self.index_open:
                 for character in character_list:
                     if check_connection(character.radius,self.player,character):
                         self.player.block()
                         character.change_facing_direction(self.player.rect.center)
                         self.create_dialog(character)
                         character.can_rotate = False
+
+            if keys[pygame.K_RETURN]:
+                    self.index_open = not self.index_open
+                    self.player.block() if self.index_open else self.player.unblock()
 
     def create_dialog(self, character: Character):
         if not self.dialog_tree:
@@ -206,6 +212,7 @@ class Game():
 
             # overlays
             if self.dialog_tree: self.dialog_tree.update()
+            if self.index_open: self.monster_index.update(dt)
 
             self.tint_screen(dt)
             pygame.display.update()
