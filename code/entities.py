@@ -74,6 +74,7 @@ class Player(Entity):
         super().__init__(pos, facing_direction, frames, groups)
         self.collision_sprites = collision_sprites
         self.noticed = False
+        self.character_approaching = False
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -138,6 +139,7 @@ class Character(Entity):
 
         self.timers: dict[str, Timer] = {
             'look_around': Timer(1500,True,True,self.random_view_direction),
+            'notice': Timer(500,func=self.start_move)
         }
 
     def random_view_direction(self):
@@ -148,8 +150,43 @@ class Character(Entity):
         is_defeated = self.character_data['defeated']
         return self.character_data['dialog'][ 'defeated' if is_defeated else 'default']
 
+    def raycast(self):
+        from support import check_connection
+        if check_connection(self.radius,self,self.player) and self.has_los() and not self.has_moved and not self.has_noticed:
+            self.player.block()
+            self.player.change_facing_direction(self.rect.center)
+            self.timers['notice'].activate()
+            self.can_rotate = False
+            self.has_noticed = True
+            self.player.noticed = True
+            self.player.character_approaching =  True
+
+    def has_los(self):
+        if vector(self.rect.center).distance_to(self.player.rect.center) < self.radius:
+            collisions = [ bool(rects.clipline(self.rect.center,self.player.rect.center )) for rects in self.collsion_rects ]
+            return not any(collisions)
+
+    def start_move(self):
+        relation = (vector(self.player.rect.center) - vector(self.rect.center)).normalize()
+        self.direction = vector( round(relation.x), round(relation.y))
+
+    def move(self, dt: float):
+        if not self.has_moved and self.direction:
+            if not self.hitbox.inflate(10,10).colliderect(self.player.hitbox):
+                self.rect.center += (self.direction * self.speed * dt)
+                self.hitbox.center = self.rect.center
+            else:
+                self.has_moved = True
+                self.direction = vector(0,0)
+                self.create_dialog(self)
+                self.player.noticed = False
+                self.player.character_approaching = False
+
     def update(self, dt: float, *args, **kwargs):
         super().update(*args, **kwargs)
         for timer in self.timers.values():
             timer.update()
         super().animate(dt)
+        if self.character_data['look_around']:
+            self.raycast()
+            self.move(dt)

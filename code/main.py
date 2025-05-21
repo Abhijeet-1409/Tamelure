@@ -128,7 +128,7 @@ class Game():
 
     # dialog system
     def input(self):
-        if not self.dialog_tree:
+        if not self.dialog_tree and not self.player.character_approaching:
             keys = pygame.key.get_just_pressed()
             character_list: list[Character] = self.character_sprites.sprites()
             if keys[pygame.K_SPACE]:

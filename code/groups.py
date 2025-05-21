@@ -25,3 +25,6 @@ class AllSprites(pygame.sprite.Group):
                 if isinstance(sprite,Entity):
                     self.display_surface.blit(self.shadow_surf,sprite.rect.topleft + self.offset + vector(40,110))
                 self.display_surface.blit(sprite.image,sprite.rect.topleft + self.offset)
+                if sprite == player and player.noticed:
+                    rect = self.notice_surf.get_frect(midbottom = player.rect.midtop)
+                    self.display_surface.blit(self.notice_surf,rect.topleft + self.offset)
