@@ -76,6 +76,13 @@ class Game():
             for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
                 BaseSprite((x*TILE_SIZE,y*TILE_SIZE),surf,(self.all_sprites,),WORLD_LAYERS['bg'])
 
+        player_surf = pygame.Surface((100,200))
+        player_surf.fill('red')
+        player_frames = {}
+        for direction in ['up','down','left','right']:
+            player_frames[direction] = [player_surf]
+        self.player = Entity((0,0),'down',player_frames,(self.all_sprites,))
+
     def run(self):
         while self.running:
             # delta time
