@@ -144,6 +144,10 @@ class Character(Entity):
         if self.can_rotate:
             self.facing_direction = choice(self.view_directions)
 
+    def get_dialogs(self):
+        is_defeated = self.character_data['defeated']
+        return self.character_data['dialog'][ 'defeated' if is_defeated else 'default']
+
     def update(self, dt: float, *args, **kwargs):
         super().update(*args, **kwargs)
         for timer in self.timers.values():
