@@ -48,6 +48,9 @@ class Game():
         self.import_assets()
         self.setup(self.tmx_maps['world'],'house')
 
+        # overlays
+        self.dialog_tree: DialogTree | None = None
+
     def import_assets(self):
         self.tmx_maps = tmx_importer('data','maps')
 
@@ -123,8 +126,26 @@ class Game():
                     self.collision_sprites,
                     float(obj.properties['radius']))
 
+    # dialog system
+    def input(self):
+        if not self.dialog_tree:
+            keys = pygame.key.get_just_pressed()
+            character_list: list[Character] = self.character_sprites.sprites()
+            if keys[pygame.K_SPACE]:
+                for character in character_list:
+                    if check_connection(character.radius,self.player,character):
+                        self.player.block()
+                        character.change_facing_direction(self.player.rect.center)
+                        self.create_dialog(character)
+                        character.can_rotate = False
+
     def create_dialog(self, character: Character):
-        pass
+        if not self.dialog_tree:
+            self.dialog_tree = DialogTree(character,self.player,(self.all_sprites,),self.fonts['dialog'],self.end_dialog)
+
+    def end_dialog(self, character: Character):
+        self.dialog_tree = None
+        self.player.unblock()
 
     def run(self):
         while self.running:
@@ -139,8 +160,12 @@ class Game():
                     self.running = False
 
             # game logic
+            self.input()
             self.all_sprites.update(dt)
             self.all_sprites.draw(self.player)
+
+            # overlays
+            if self.dialog_tree: self.dialog_tree.update()
 
             pygame.display.update()
 
