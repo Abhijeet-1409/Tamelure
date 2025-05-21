@@ -44,7 +44,23 @@ class MonsterIndex():
         self.max_stats['energy'] = self.max_stats.pop('max_energy')
 
     def input(self):
-        pass
+        keys = pygame.key.get_just_pressed()
+        if keys[pygame.K_UP]:
+            self.index -= 1
+        if keys[pygame.K_DOWN]:
+            self.index += 1
+
+        self.index = self.index % len(self.monsters)
+
+        if keys[pygame.K_SPACE]:
+            if self.selected_index != None :
+                selected_monster = self.monsters[self.selected_index]
+                current_monster = self.monsters[self.index]
+                self.monsters[self.index] = selected_monster
+                self.monsters[self.selected_index] = current_monster
+                self.selected_index = None
+            else:
+                self.selected_index = self.index
 
     def display_list(self):
         bg_rect = pygame.FRect(self.main_rect.topleft,(self.list_width,self.main_rect.height))
