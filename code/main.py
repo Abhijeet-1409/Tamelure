@@ -111,6 +111,20 @@ class Game():
                     self.overworld_frames['characters']['player'],
                     (self.all_sprites,),
                     self.collision_sprites)
+            if obj.name == 'Character':
+                Character(
+                    (obj.x,obj.y),
+                    obj.properties['direction'],
+                    self.overworld_frames['characters'][obj.properties['graphic']],
+                    (self.all_sprites,self.collision_sprites,self.character_sprites),
+                    TRAINER_DATA[obj.properties['character_id']],
+                    self.player,
+                    self.create_dialog,
+                    self.collision_sprites,
+                    float(obj.properties['radius']))
+
+    def create_dialog(self, character: Character):
+        pass
 
     def run(self):
         while self.running:
