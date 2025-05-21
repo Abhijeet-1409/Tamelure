@@ -74,6 +74,10 @@ class Game():
         }
 
     def setup(self, tmx_map: TiledMap, player_start_pos: str):
+        # clear the map
+        for group in [self.all_sprites,self.collision_sprites,self.transition_sprites,self.character_sprites]:
+            group.empty()
+
         # terrain and terrain top
         for layer in ['Terrain', 'Terrain Top']:
             for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
@@ -96,6 +100,10 @@ class Game():
                 BaseSprite((obj.x,obj.y),obj.image,(self.all_sprites,),WORLD_LAYERS['top'])
             else:
                 CollidableSprite((obj.x,obj.y),obj.image,(self.all_sprites,self.collision_sprites))
+
+        # transition objects
+        for obj in tmx_map.get_layer_by_name('Transition'):
+            TransitionSprite((obj.x,obj.y),(obj.width,obj.height),(obj.properties['target'],obj.properties['pos']),(self.transition_sprites,))
 
         # collision objects
         for obj in tmx_map.get_layer_by_name('Collisions'):
@@ -147,6 +155,14 @@ class Game():
         self.dialog_tree = None
         self.player.unblock()
 
+    # transition check
+    def transition_check(self):
+        sprites: list[TransitionSprite] = [sprite for sprite in self.transition_sprites if sprite.rect.colliderect(self.player.hitbox)]
+        if sprites:
+            self.player.block()
+            self.transition_target = sprites[0].target
+            self.setup(self.tmx_maps[self.transition_target[0]],self.transition_target[1])
+
     def run(self):
         while self.running:
             # delta time
@@ -161,6 +177,7 @@ class Game():
 
             # game logic
             self.input()
+            self.transition_check()
             self.all_sprites.update(dt)
             self.all_sprites.draw(self.player)
 
