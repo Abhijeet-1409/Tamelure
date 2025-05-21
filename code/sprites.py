@@ -28,3 +28,11 @@ class AnimatedSprite(BaseSprite):
         self.animate(dt)
 
 
+class MonsterPatchSprite(BaseSprite):
+
+    def __init__(self, pos: tuple[float, float], surf: Surface, groups: tuple[pygame.sprite.Group], biome: str):
+        self.biome = biome
+        super().__init__(pos, surf, groups, WORLD_LAYERS['main' if self.biome != 'sand' else 'bg'])
+        self.y_sort -= 40
+
+
