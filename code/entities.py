@@ -61,4 +61,36 @@ class Entity(pygame.sprite.Sprite):
         self.y_sort = self.rect.centery
 
 
+class Player(Entity):
+
+    def __init__(
+            self,
+            pos: tuple[float, float],
+            facing_direction: str,
+            frames: dict[str,list[Surface]],
+            groups: tuple[pygame.sprite.Group],
+            collision_sprites: pygame.sprite.Group
+        ):
+        super().__init__(pos, facing_direction, frames, groups)
+        self.collision_sprites = collision_sprites
+        self.noticed = False
+
+    def input(self):
+        keys = pygame.key.get_pressed()
+        self.direction.x = int(keys[pygame.K_d] or keys[pygame.K_RIGHT]) - int(keys[pygame.K_a] or keys[pygame.K_LEFT])
+        self.direction.y = int(keys[pygame.K_s] or keys[pygame.K_DOWN]) - int(keys[pygame.K_w] or keys[pygame.K_UP])
+        self.direction = self.direction.normalize() if self.direction else self.direction
+
+    def move(self, dt: float):
+        self.rect.centerx += (self.direction.x * self.speed * dt)
+        self.hitbox.centerx = self.rect.centerx
+        self.rect.centery += (self.direction.y * self.speed * dt)
+        self.hitbox.centery = self.rect.centery
+
+    def update(self, dt: float, *args, **kwargs):
+        super().update(*args, **kwargs)
+        if not self.blocked:
+            self.input()
+            self.move(dt)
+        self.animate(dt)
 
