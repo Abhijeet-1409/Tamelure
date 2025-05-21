@@ -1,0 +1,64 @@
+from random import choice
+from typing import Callable
+
+from settings import *
+from sprites import *
+from game_data import *
+from custom_timer import *
+
+
+class Entity(pygame.sprite.Sprite):
+
+    def __init__(self, pos: tuple[float,float], facing_direction: str,frames: dict[str,list[Surface]], groups: tuple[pygame.sprite.Group]):
+        super().__init__(*groups)
+        self.z_index = WORLD_LAYERS['main']
+
+        # graphics
+        self.facing_direction = facing_direction
+        self.frame_index, self.frames = 0, frames
+
+        # movement
+        self.direction = vector(0,0)
+        self.speed = 250
+        self.blocked = False
+
+        # sprite setup
+        self.image = self.frames[self.facing_direction][self.frame_index]
+        self.rect = self.image.get_frect(center = pos)
+        self.hitbox = self.rect.inflate(-self.rect.width / 2, -60)
+
+        self.y_sort = self.rect.centery
+
+    def animate(self, dt: float):
+        self.frame_index += (ANIMATION_SPEED * dt)
+        self.image = self.frames[self.get_state()][int(self.frame_index) % len(self.frames[self.get_state()])]
+
+    def get_state(self):
+        moving = bool(self.direction)
+        if moving:
+            if self.direction.x != 0:
+                self.facing_direction = 'right' if self.direction.x > 0 else 'left'
+            if self.direction.y != 0:
+                self.facing_direction = 'down' if self.direction.y > 0 else 'up'
+        return f'{self.facing_direction}{'' if moving else '_idle'}'
+
+    def block(self):
+        self.blocked = True
+        self.direction = vector(0,0)
+
+    def unblock(self):
+        self.blocked = False
+
+    def change_facing_direction(self, target_pos: tuple[float,float]):
+        relation = vector(target_pos) - vector(self.rect.center)
+        if abs(relation.y) < 30:
+            self.facing_direction = 'right' if relation.x > 0 else 'left'
+        if abs(relation.x) < 30:
+            self.facing_direction = 'down' if relation.y > 0 else 'up'
+
+    def update(self, *args, **kwargs):
+        super().update(*args, **kwargs)
+        self.y_sort = self.rect.centery
+
+
+
