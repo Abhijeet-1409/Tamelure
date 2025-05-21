@@ -40,7 +40,7 @@ class Game():
         }
 
         # groups
-        self.all_sprites = pygame.sprite.Group()
+        self.all_sprites = AllSprites()
         self.collision_sprites = pygame.sprite.Group()
         self.character_sprites = pygame.sprite.Group()
         self.transition_sprites = pygame.sprite.Group()
@@ -98,7 +98,7 @@ class Game():
 
             # game logic
             self.all_sprites.update(dt)
-            self.all_sprites.draw(self.display_surface)
+            self.all_sprites.draw(self.player)
 
             pygame.display.update()
 
