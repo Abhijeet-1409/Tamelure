@@ -81,7 +81,8 @@ class Game():
         player_frames = {}
         for direction in ['up','down','left','right']:
             player_frames[direction] = [player_surf]
-        self.player = Entity((0,0),'down',player_frames,(self.all_sprites,))
+            player_frames[f'{direction}_idle'] = [player_surf]
+        self.player = Player((0,0),'down',player_frames,(self.all_sprites,),self.collision_sprites)
 
     def run(self):
         while self.running:
