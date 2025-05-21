@@ -84,8 +84,22 @@ class Player(Entity):
     def move(self, dt: float):
         self.rect.centerx += (self.direction.x * self.speed * dt)
         self.hitbox.centerx = self.rect.centerx
+        self.collision('horizontal')
         self.rect.centery += (self.direction.y * self.speed * dt)
         self.hitbox.centery = self.rect.centery
+        self.collision('vertical')
+
+    def collision(self, axis: str):
+        for sprite in self.collision_sprites:
+            if sprite.hitbox.colliderect(self.hitbox):
+                if axis == 'horizontal':
+                    if self.direction.x > 0 : self.hitbox.right = sprite.hitbox.left
+                    if self.direction.x < 0 : self.hitbox.left = sprite.hitbox.right
+                    self.rect.centerx = self.hitbox.centerx
+                if axis == 'vertical':
+                    if self.direction.y > 0 : self.hitbox.bottom = sprite.hitbox.top
+                    if self.direction.y < 0 : self.hitbox.top = sprite.hitbox.bottom
+                    self.rect.centery = self.hitbox.centery
 
     def update(self, dt: float, *args, **kwargs):
         super().update(*args, **kwargs)
