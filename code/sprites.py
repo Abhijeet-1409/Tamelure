@@ -36,3 +36,16 @@ class MonsterPatchSprite(BaseSprite):
         self.y_sort -= 40
 
 
+class BorderSprite(BaseSprite):
+
+    def __init__(self, pos: tuple[float, float], surf: Surface, groups: tuple[pygame.sprite.Group]):
+        super().__init__(pos, surf, groups)
+
+
+class CollidableSprite(BaseSprite):
+
+    def __init__(self, pos: tuple[float, float], surf: Surface, groups: tuple[pygame.sprite.Group]):
+        super().__init__(pos, surf, groups)
+        self.hitbox = self.rect.inflate(0,-(self.rect.height * 0.6))
+
+
