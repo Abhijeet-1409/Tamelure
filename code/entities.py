@@ -108,3 +108,44 @@ class Player(Entity):
             self.move(dt)
         self.animate(dt)
 
+
+class Character(Entity):
+
+    def __init__(
+            self,
+            pos: tuple[float, float],
+            facing_direction: str,
+            frames: dict[str,list[Surface]],
+            groups: tuple[pygame.sprite.Group],
+            character_data: dict,
+            player: Player,
+            create_dialog: Callable[['Character'],None],
+            collision_sprites: pygame.sprite.Group,
+            radius: float
+        ):
+        super().__init__(pos, facing_direction, frames, groups)
+        self.character_data = character_data
+        self.player = player
+        self.create_dialog = create_dialog
+        self.collsion_rects: list[pygame.FRect] = [sprite.rect for sprite in collision_sprites if sprite is not self]
+
+        # movement
+        self.has_moved = False
+        self.can_rotate = True
+        self.has_noticed = False
+        self.radius = radius
+        self.view_directions = character_data['directions']
+
+        self.timers: dict[str, Timer] = {
+            'look_around': Timer(1500,True,True,self.random_view_direction),
+        }
+
+    def random_view_direction(self):
+        if self.can_rotate:
+            self.facing_direction = choice(self.view_directions)
+
+    def update(self, dt: float, *args, **kwargs):
+        super().update(*args, **kwargs)
+        for timer in self.timers.values():
+            timer.update()
+        super().animate(dt)
