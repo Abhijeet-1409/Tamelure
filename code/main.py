@@ -91,6 +91,10 @@ class Game():
         for obj in tmx_map.get_layer_by_name('Objects'):
             BaseSprite((obj.x,obj.y),obj.image,(self.all_sprites,))
 
+        # monster patch
+        for obj in tmx_map.get_layer_by_name('Monsters'):
+            MonsterPatchSprite((obj.x,obj.y),obj.image,(self.all_sprites,),obj.properties['biome'])
+
         # Entities
         for obj in tmx_map.get_layer_by_name('Entities'):
             if obj.name == 'Player' and obj.properties['pos'] == player_start_pos:
