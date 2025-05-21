@@ -47,7 +47,49 @@ class MonsterIndex():
         pass
 
     def display_list(self):
-        pass
+        bg_rect = pygame.FRect(self.main_rect.topleft,(self.list_width,self.main_rect.height))
+        pygame.draw.rect(self.display_surface,COLORS['gray'],bg_rect,0,0,12,0,12,0)
+
+        line_offset = vector(0,-2)
+        v_offset = 0 if self.index < self.visible_items else -(self.index - self.visible_items  + 1) * self.item_height
+        for index, monster in self.monsters.items():
+            #colors
+            bg_color = COLORS['gray'] if self.index != index else COLORS['light']
+            text_color = COLORS['white'] if self.selected_index != index else COLORS['gold']
+
+
+            top = self.main_rect.top + index * self.item_height + v_offset
+            item_rect = pygame.FRect(self.main_rect.left,top,self.list_width,self.item_height)
+
+            text_surf = self.fonts['regular'].render(monster.name,False,text_color)
+            text_rect = text_surf.get_frect(midleft = item_rect.midleft + vector(90,10))
+
+            icon_surf: pygame.Surface = self.icon_frames[monster.name]
+            icon_rect = icon_surf.get_frect(center = item_rect.midleft + vector(45,0))
+
+
+            if item_rect.colliderect(self.main_rect):
+                if item_rect.collidepoint(self.main_rect.topleft):
+                    pygame.draw.rect(self.display_surface,bg_color,item_rect,0,0,12)
+                elif item_rect.collidepoint(self.main_rect.bottomleft + vector(1,-1)):
+                    pygame.draw.rect(self.display_surface,bg_color,item_rect,0,0,0,0,12,0)
+                else:
+                    pygame.draw.rect(self.display_surface,bg_color,item_rect)
+
+                self.display_surface.blit(text_surf,text_rect)
+                self.display_surface.blit(icon_surf,icon_rect)
+
+        # lines
+        for i in range(1,min(self.visible_items,len(self.monsters))):
+            left = self.main_rect.left
+            right = self.main_rect.left + self.list_width
+            y = self.main_rect.top + self.item_height * i
+            pygame.draw.line(self.display_surface,COLORS['light-gray'],(left,y),(right,y))
+
+        # shadow
+        shadow_surf = pygame.Surface((4,self.main_rect.height))
+        shadow_surf.set_alpha(100)
+        self.display_surface.blit(shadow_surf,(self.main_rect.left + self.list_width - 4,self.main_rect.top))
 
     def display_main(self, dt: float):
         pass
