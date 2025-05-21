@@ -49,3 +49,9 @@ class CollidableSprite(BaseSprite):
         self.hitbox = self.rect.inflate(0,-(self.rect.height * 0.6))
 
 
+class TransitionSprite(BaseSprite):
+
+    def __init__(self, pos: tuple[float, float], size: tuple[float, float], target: tuple[str, str], groups: tuple[pygame.sprite.Group], z_index=WORLD_LAYERS['main']):
+        surf = Surface(size)
+        super().__init__(pos, surf, groups, z_index)
+        self.target = target
