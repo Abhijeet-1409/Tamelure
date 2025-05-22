@@ -28,3 +28,14 @@ class AllSprites(pygame.sprite.Group):
                 if sprite == player and player.noticed:
                     rect = self.notice_surf.get_frect(midbottom = player.rect.midtop)
                     self.display_surface.blit(self.notice_surf,rect.topleft + self.offset)
+
+
+class BattleSprites(pygame.sprite.Group):
+
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+        self.display_surface = pygame.display.get_surface()
+
+    def draw(self):
+        for sprite in sorted(self.sprites(), key = lambda sprite: sprite.z_index):
+            self.display_surface.blit(sprite.image,sprite.rect)
