@@ -30,10 +30,29 @@ class Battle():
         self.setup()
 
     def setup(self):
-        pass
+        for entity, monsters in self.monster_data.items():
+            for index, monster in { k: v for k, v in monsters.items() if k <= 2}.items():
+                self.create_monster(monster,index,index,entity)
 
     def create_monster(self, monster: Monster, index: int, pos_index: int, entity: str):
-        pass
+        frames: dict[str, list[pygame.Surface]] = self.monster_frames['monsters'][monster.name]
+        if entity == 'player':
+            pos = sorted(list(BATTLE_POSITIONS['left'].values()),key= lambda tup: tup[1])[pos_index]
+            groups = (self.battle_sprites, self.player_sprites)
+            frames = { state: [ pygame.transform.flip(frame,True,False) for frame in frame_list ] for state, frame_list in frames.items()}
+        else:
+            pos = sorted(list(BATTLE_POSITIONS['right'].values()),key= lambda tup: tup[1])[pos_index]
+            groups = (self.battle_sprites, self.opponent_sprites)
+
+        monster_sprite = MonsterSprite(pos,frames,groups,monster,index,pos_index,entity)
+
+        name_pos = monster_sprite.rect.midleft + vector(16,-70) if entity == 'player' else monster_sprite.rect.midright + vector(-40,-70)
+        name_sprite = MonsterNameSprite(name_pos,monster_sprite,(self.battle_sprites,),self.fonts['regular'])
+
+        anchor = name_sprite.rect.bottomleft if entity == 'player' else name_sprite.rect.bottomright
+        MonsterLevelSprite(entity,anchor,monster_sprite,(self.battle_sprites,),self.fonts['small'])
+
+        MonsterStatsSprite(monster_sprite.rect.midbottom + vector(0,20),monster_sprite,(150,48),(self.battle_sprites,),self.fonts['small'])
 
     def update(self, dt:float):
         self.display_surface.blit(self.bg_surf,(0,0))
