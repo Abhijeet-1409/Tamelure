@@ -6,6 +6,7 @@ from support import *
 from dialog import *
 from monster import *
 from monster_index import *
+from battle import *
 
 
 class Game():
@@ -60,6 +61,7 @@ class Game():
         self.dialog_tree: DialogTree | None = None
         self.monster_index = MonsterIndex(self.player_monsters,self.fonts,self.monster_frames)
         self.index_open = False
+        self.battle: Battle | None = Battle(self.player_monsters,self.dummy_monster,self.monster_frames,self.bg_frames['forest'],self.fonts)
 
     def import_assets(self):
         self.tmx_maps = tmx_importer('data','maps')
@@ -82,6 +84,8 @@ class Game():
             'small': pygame.font.Font(join(BASE_DIR,'graphics','fonts','PixeloidSans.ttf'),14),
             'bold': pygame.font.Font(join(BASE_DIR,'graphics','fonts','dogicapixelbold.otf'),20),
         }
+
+        self.bg_frames = import_folder_dict('graphics','backgrounds')
 
     def setup(self, tmx_map: TiledMap, player_start_pos: str):
         # clear the map
@@ -146,7 +150,7 @@ class Game():
 
     # dialog system
     def input(self):
-        if not self.dialog_tree and not self.player.character_approaching:
+        if not self.dialog_tree and not self.player.character_approaching and not self.battle:
             keys = pygame.key.get_just_pressed()
             character_list: list[Character] = self.character_sprites.sprites()
             if keys[pygame.K_SPACE] and not self.index_open:
@@ -213,6 +217,7 @@ class Game():
             # overlays
             if self.dialog_tree: self.dialog_tree.update()
             if self.index_open: self.monster_index.update(dt)
+            if self.battle: self.battle.update(dt)
 
             self.tint_screen(dt)
             pygame.display.update()
