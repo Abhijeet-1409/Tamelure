@@ -4,6 +4,7 @@ from random import *
 from settings import *
 from monster import *
 from support import *
+from custom_timer import *
 
 
 # overworld sprites
@@ -74,19 +75,56 @@ class MonsterSprite(pygame.sprite.Sprite):
         self.frame_index, self.frames, self.state = 0, frames, 'idle'
         self.animation_speed = ANIMATION_SPEED + uniform(-1,1)
         self.z_index = BATTLE_LAYERS['monster']
+        self.highlight = False
+        self.adjusted_frame_index = 0
 
         # sprite setup
         super().__init__(*groups)
         self.image = self.frames[self.state][self.frame_index]
         self.rect = self.image.get_frect(center = pos)
 
+        # timers
+        self.timers = {
+            'remove_highlight': Timer(300,func = lambda: self.set_highlight(False))
+        }
+
     def animate(self, dt: float):
         self.frame_index += (ANIMATION_SPEED * dt)
-        self.image = self.frames[self.state][int(self.frame_index) % len(self.frames[self.state])]
+        self.adjusted_frame_index = int(self.frame_index) % len(self.frames[self.state])
+        self.image = self.frames[self.state][self.adjusted_frame_index]
+
+        if self.highlight:
+            white_surf = pygame.mask.from_surface(self.image).to_surface()
+            white_surf.set_colorkey('black')
+            self.image = white_surf
+
+    def set_highlight(self, value: bool):
+        self.highlight = value
+        if value:
+            self.timers['remove_highlight'].activate()
 
     def update(self, dt: float, *args, **kwargs):
         super().update(*args, **kwargs)
+        for timer in self.timers.values():
+            timer.update()
         self.animate(dt)
+        self.monster.update(dt)
+
+
+class MonsterOutlineSprite(pygame.sprite.Sprite):
+
+    def __init__(self, monster_sprite: MonsterSprite, groups: tuple[pygame.sprite.Group], outline_frames: dict[str, list[Surface]]):
+        super().__init__(*groups)
+        self.z_index = BATTLE_LAYERS['outline']
+        self.monster_sprite = monster_sprite
+        self.frames = outline_frames
+
+        self.image = self.frames[self.monster_sprite.state][self.monster_sprite.adjusted_frame_index]
+        self.rect = self.image.get_frect(center = self.monster_sprite.rect.center)
+
+    def update(self, _, *args, **kwargs):
+        super().update(*args, **kwargs)
+        self.image = self.frames[self.monster_sprite.state][self.monster_sprite.adjusted_frame_index]
 
 
 class MonsterNameSprite(pygame.sprite.Sprite):
