@@ -33,9 +33,9 @@ class Game():
 
         # dummy monster
         self.dummy_monster = {
-            0: Monster('Atrox', 24),
-			1: Monster('Sparchu', 24),
-			2: Monster('Gulfin', 24),
+            0: Monster('Atrox', 2),
+			1: Monster('Sparchu', 3),
+			2: Monster('Gulfin', 5),
 			3: Monster('Jacana', 2),
 			4: Monster('Pouch', 3)
         }
@@ -77,6 +77,8 @@ class Game():
             'monsters': all_monsters_importer('graphics','monsters'),
             'ui': import_folder_dict('graphics','ui')
         }
+
+        self.monster_frames['outlines'] = outline_creator(self.monster_frames['monsters'],4)
 
         self.fonts = {
             'dialog': pygame.font.Font(join(BASE_DIR,'graphics','fonts','PixeloidSans.ttf'),30),
