@@ -8,6 +8,7 @@ class Monster():
 
     def __init__(self, name: str, level: int):
         self.name, self.level = name, level
+        self.paused = False
 
         # stats
         self.element: str = MONSTER_DATA[name]['stats']['element']
@@ -16,7 +17,7 @@ class Monster():
         self.energy = self.base_stats['max_energy'] * self.level
         self.health -= randint(0,self.health//2)
         self.energy -= randint(0,self.energy//2)
-        self.initiative = randint(0,100)
+        self.initiative = 0
         self.abilities: dict[int, str] = MONSTER_DATA[name]['abilities']
 
         # experience
@@ -36,8 +37,10 @@ class Monster():
             'recovery': self.get_stat('recovery')
         }
 
-    def get_abilites(self):
-        return [ ability for level, ability in self.abilities.items() if self.level >= level]
+    def get_abilities(self, all: bool = True):
+        if all:
+            return [ ability for level, ability in self.abilities.items() if self.level >= level]
+        return [ ability for level, ability in self.abilities.items() if self.level >= level and self.energy >= ATTACK_DATA[ability]['cost'] ]
 
     def get_info(self):
         return (
@@ -45,3 +48,7 @@ class Monster():
             (self.energy,self.get_stat('max_energy')),
             (self.initiative,100)
         )
+
+    def update(self, dt: float):
+        if not self.paused:
+            self.initiative += self.get_stat('speed') * dt
