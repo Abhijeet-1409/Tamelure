@@ -1,6 +1,7 @@
 from settings import *
 from support import *
 from entities import *
+from sprites import *
 
 
 class AllSprites(pygame.sprite.Group):
@@ -36,6 +37,10 @@ class BattleSprites(pygame.sprite.Group):
         super().__init__(*sprites)
         self.display_surface = pygame.display.get_surface()
 
-    def draw(self):
+    def draw(self, current_monster_sprite: MonsterSprite):
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.z_index):
-            self.display_surface.blit(sprite.image,sprite.rect)
+            if sprite.z_index == BATTLE_LAYERS['outline']:
+                if sprite.monster_sprite == current_monster_sprite:
+                    self.display_surface.blit(sprite.image,sprite.rect)
+            else:
+                self.display_surface.blit(sprite.image,sprite.rect)
