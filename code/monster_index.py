@@ -202,7 +202,7 @@ class MonsterIndex():
         abilities_text_rect = abilities_text_surf.get_frect(bottomleft = abilities_rect.topleft)
         self.display_surface.blit(abilities_text_surf,abilities_text_rect)
 
-        for index, ability in enumerate(monster.get_abilites()):
+        for index, ability in enumerate(monster.get_abilities()):
             ability_element = ATTACK_DATA[ability]['element']
             ability_text_surf = self.fonts['regular'].render(ability,False,COLORS['black'])
             x = abilities_rect.left + (index % 2) * (abilities_rect.width / 2)
