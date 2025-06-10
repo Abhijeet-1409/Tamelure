@@ -1,3 +1,5 @@
+from typing import Any, Literal, Optional
+
 from settings import *
 from support import *
 from entities import *
@@ -37,10 +39,24 @@ class BattleSprites(pygame.sprite.Group):
         super().__init__(*sprites)
         self.display_surface = pygame.display.get_surface()
 
-    def draw(self, current_monster_sprite: MonsterSprite):
+    def draw(
+            self,
+            current_monster_sprite: MonsterSprite,
+            side: Literal['player','opponent'],
+            mode: Optional[Literal['general','monster','attacks','switch','target']],
+            target_index: int,
+            player_sprites: pygame.sprite.Group,
+            opponent_sprites: pygame.sprite.Group,
+        ):
+        # get available positions
+        sprite_group = opponent_sprites if side == 'opponent' else player_sprites
+        sprites: dict[int,MonsterSprite] = {sprite.pos_index: sprite for sprite in sprite_group}
+        monster_sprite = sprites[list(sprites.keys())[target_index]] if sprites else None
+
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.z_index):
             if sprite.z_index == BATTLE_LAYERS['outline']:
-                if sprite.monster_sprite == current_monster_sprite:
+                if sprite.monster_sprite == current_monster_sprite and not (mode == 'target' and side == 'player') or\
+                   sprite.monster_sprite == monster_sprite and sprite.monster_sprite.entity == side and mode and mode == 'target':
                     self.display_surface.blit(sprite.image,sprite.rect)
             else:
                 self.display_surface.blit(sprite.image,sprite.rect)
