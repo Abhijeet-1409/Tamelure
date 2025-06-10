@@ -12,7 +12,7 @@ def import_image(*path, alpha = True, format = 'png'):
 	return surf
 
 def import_folder(*path):
-	frames = []
+	frames: list[pygame.Surface] = []
 	for folder_path, sub_folders, image_names in walk(join(BASE_DIR,*path)):
 		for image_name in sorted(image_names, key = lambda name: int(name.split('.')[0])):
 			full_path = join(folder_path, image_name)
@@ -123,6 +123,23 @@ def outline_creator(frame_dict: dict[str, dict[str, list[pygame.Surface]]], widt
 					new_surf.blit(white_frame,pos)
 				outline_frame_dict[monster][state].append(new_surf)
 	return outline_frame_dict
+
+def attack_importer(*path) -> dict[str, list[pygame.Surface]]:
+	attack_dict: dict[str, list[pygame.Surface]] = {}
+	for folder_path, _, file_names in walk(join(BASE_DIR,*path)):
+		for file in file_names:
+			name = file.split('.')[0]
+			attack_dict[name] = list(import_tilemap(4,1,folder_path,name).values())
+	return attack_dict
+
+def audio_importer(*path):
+	audio_dict: dict[str, pygame.mixer.Sound] = {}
+	for folder_path, _, file_names in walk(join(BASE_DIR, *path)):
+		for file in file_names:
+			name = file.split(".")[0]
+			full_path = join(folder_path,file)
+			audio_dict[name] = pygame.mixer.Sound(full_path)
+	return audio_dict
 
 
 # game function
