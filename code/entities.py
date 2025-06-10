@@ -122,13 +122,17 @@ class Character(Entity):
             player: Player,
             create_dialog: Callable[['Character'],None],
             collision_sprites: pygame.sprite.Group,
-            radius: float
+            radius: float,
+            nurse: bool,
+            notice_sound: pygame.Sound
         ):
         super().__init__(pos, facing_direction, frames, groups)
         self.character_data = character_data
         self.player = player
         self.create_dialog = create_dialog
         self.collsion_rects: list[pygame.FRect] = [sprite.rect for sprite in collision_sprites if sprite is not self]
+        self.nurse = nurse
+        self.monsters: None | dict[int, Monster] = { index: Monster(name,level) for index, (name, level) in self.character_data['monsters'].items()} if 'monsters'in self.character_data else None
 
         # movement
         self.has_moved = False
@@ -141,6 +145,7 @@ class Character(Entity):
             'look_around': Timer(1500,True,True,self.random_view_direction),
             'notice': Timer(500,func=self.start_move)
         }
+        self.notice_sound = notice_sound
 
     def random_view_direction(self):
         if self.can_rotate:
@@ -160,6 +165,7 @@ class Character(Entity):
             self.has_noticed = True
             self.player.noticed = True
             self.player.character_approaching =  True
+            self.notice_sound.play()
 
     def has_los(self):
         if vector(self.rect.center).distance_to(self.player.rect.center) < self.radius:
