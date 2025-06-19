@@ -1,4 +1,5 @@
 from typing import Literal
+from random import choice
 
 from settings import *
 from sprites import *
@@ -260,12 +261,14 @@ class Game():
 
     # monster encounters
     def check_monster(self):
+        healthy_player_monster: list[Monster] = [ monster for monster in self.player_monsters.values() if monster.health > 10 ]
         monster_patches: list[MonsterPatchSprite] = self.monster_patch_sprites.sprites()
-        if [patch for patch in monster_patches if patch.rect.colliderect(self.player.hitbox)] and not self.battle and self.player.direction:
+        if [patch for patch in monster_patches if patch.rect.colliderect(self.player.hitbox)] and not self.battle and self.player.direction and len(healthy_player_monster) >= 3:
             if not self.encounter_timer.active:
                 self.encounter_timer.activate()
 
     def monster_encounter(self):
+        self.reorder_player_monster()
         monster_patches: list[MonsterPatchSprite] = [ patch for patch in self.monster_patch_sprites.sprites() if patch.rect.colliderect(self.player.hitbox)]
         if monster_patches and self.player.direction:
             self.encounter_timer.duration = randint(800, 2500)
@@ -283,6 +286,23 @@ class Game():
                 self.audios)
             self.tint_mode = 'tint'
         self.encounter_timer.deactivate()
+
+    def reorder_player_monster(self):
+        index_monster_list = [ (index,monster) for index, monster in self.player_monsters.items()]
+        is_reorder_required = False
+        for index,monster in index_monster_list[:3]:
+            if monster.health < 20:
+                is_reorder_required = True
+        if is_reorder_required:
+            unhealthy_monster = [ (index,monster) for index, monster in index_monster_list if monster.health < 20 and index < 3]
+            healthy_monster = [ (index,monster) for index, monster in index_monster_list if monster.health > 20 and index >= 3]
+            healthy_monster = sorted(healthy_monster, reverse = True, key = lambda index_monster : index_monster[1].health )
+            min_monster_list_len = min(len(unhealthy_monster),len(healthy_monster))
+            for pos in range(min_monster_list_len):
+                key, key_monster = unhealthy_monster[pos]
+                index, index_monster = healthy_monster[pos]
+                self.player_monsters[key] = index_monster
+                self.player_monsters[index] = key_monster
 
     def run(self):
         while self.running:
