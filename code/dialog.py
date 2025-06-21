@@ -8,12 +8,14 @@ from custom_timer import *
 
 class DialogTree():
 
-    def __init__(self, character: Character, player: Player, all_sprites: AllSprites, font: pygame.Font, end_dialog: Callable[[Character],None]):
+    def __init__(self, character: Character, player: Player, all_sprites: AllSprites, font: pygame.Font, is_healing_required: bool, battle_happend: bool,end_dialog: Callable[[Character],None]):
         self.player = player
         self.character = character
         self.font = font
         self.all_sprites = all_sprites
         self.end_dialog = end_dialog
+        self.is_healing_required = is_healing_required
+        self.battle_happend = battle_happend
 
         self.dialogs = self.character.get_dialogs()
         self.dialog_num = len(self.dialogs)
@@ -30,8 +32,11 @@ class DialogTree():
             if self.dialog_index < self.dialog_num:
                 self.current_dialog = DialogSprite(self.dialogs[self.dialog_index],self.character,self.font,self.all_sprites)
                 self.dialog_timer.activate()
+            elif self.dialog_index == self.dialog_num and not self.battle_happend and self.is_healing_required:
+                self.current_dialog = DialogSprite('I should heal my monsters first',self.player,self.font,self.all_sprites)
+                self.dialog_timer.activate()
             else:
-                self.end_dialog(self.character)
+                self.end_dialog(self.character,self.is_healing_required, self.battle_happend)
 
     def update(self):
         self.dialog_timer.update()
