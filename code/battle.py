@@ -149,6 +149,7 @@ class Battle():
 
                     if self.indexes['general'] == 1:
                         self.current_monster_sprite.monster.defending = True
+                        DefendSprite(self.current_monster_sprite,self.monster_frames['ui']['shield'],(self.battle_sprites,))
                         self.update_all_monster('resume')
                         self.current_monster_sprite, self.selection_mode = None, None
                         self.indexes['general'] = 0
@@ -257,6 +258,7 @@ class Battle():
         ability: Literal['burn','heal','battlecry','spark','scratch','splash','fire','explosion','annihilate','ice','defend']  = choice(['defend',*self.current_monster_sprite.monster.get_abilities(all=False)])
         if ability == 'defend':
             self.current_monster_sprite.monster.defending = True
+            DefendSprite(self.current_monster_sprite,self.monster_frames['ui']['shield'],(self.battle_sprites,))
             self.current_monster_sprite = None
             self.update_all_monster('resume')
         else:

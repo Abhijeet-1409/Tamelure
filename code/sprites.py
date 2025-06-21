@@ -281,3 +281,25 @@ class TimedSprite(BaseSprite):
     def update(self, _, *args, **kwargs):
         super().update(*args, **kwargs)
         self.death_timer.update()
+
+
+class DefendSprite(pygame.sprite.Sprite):
+    def __init__(self, monster_sprite: MonsterSprite, image: pygame.Surface, groups: tuple[pygame.sprite.Group]):
+        super().__init__(*groups)
+        self.monster_sprite = monster_sprite
+        mask = pygame.mask.from_surface(monster_sprite.image)
+        self.image = image
+        self.z_index = BATTLE_LAYERS['overlay']
+        if mask.get_bounding_rects():
+            visible_rect = mask.get_bounding_rects()[0]
+
+            # Absolute position of the mask's top edge relative to the screen
+            visible_top = monster_sprite.rect.top + visible_rect.top
+            visible_center_x = monster_sprite.rect.left + visible_rect.centerx
+
+            midtop = (visible_center_x, visible_top - 20)
+            self.rect = self.image.get_frect(midbottom = midtop)
+
+    def update(self, _, *args, **kwargs):
+        if not self.monster_sprite.monster.defending or not self.monster_sprite.groups():
+            self.kill()
