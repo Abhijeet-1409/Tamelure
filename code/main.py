@@ -27,10 +27,13 @@ class Game():
 
         # player monsters
         self.player_monsters = {
-            0: Monster("Plumette", 6),
+            0: Monster("Plumette", 26),
             1: Monster("Sparchu", 6),
-            2: Monster("Finsta", 7)
+            2: Monster("Finsta", 7),
         }
+
+        # for monster in list(self.player_monsters.values())[:3]:
+        #     monster.health *= choice([0.8,0.1,0.1])
 
         # groups
         self.all_sprites = AllSprites()
@@ -168,18 +171,20 @@ class Game():
                     self.index_open = not self.index_open
                     self.player.block() if self.index_open else self.player.unblock()
 
-    def create_dialog(self, character: Character):
+    def create_dialog(self, character: Character, battle_happend: bool = False):
         if not self.dialog_tree:
-            self.dialog_tree = DialogTree(character,self.player,(self.all_sprites,),self.fonts['dialog'],self.end_dialog)
+            healty_player_monsters = [ monster for monster in self.player_monsters.values() if monster.health > 10 ]
+            is_healing_required = True if not healty_player_monsters and not character.nurse else False
+            self.dialog_tree = DialogTree(character,self.player,(self.all_sprites,),self.fonts['dialog'],is_healing_required,battle_happend,self.end_dialog)
 
-    def end_dialog(self, character: Character):
+    def end_dialog(self, character: Character, is_healing_reqired: bool, battle_happend: bool):
         self.dialog_tree = None
         if character.nurse:
             for monster in self.player_monsters.values():
                 monster.health = monster.get_stat('max_health')
                 monster.health = monster.get_stat('max_energy')
             self.player.unblock()
-        elif not character.character_data['defeated']:
+        elif not is_healing_reqired and not character.character_data['defeated']:
             self.audios['overworld'].stop()
             self.audios['battle'].play(-1)
             self.transition_target = Battle(
@@ -192,7 +197,9 @@ class Game():
                 character,
                 self.audios)
             self.tint_mode = 'tint'
-        else:
+        elif is_healing_reqired:
+            self.player.unblock()
+        elif battle_happend:
             self.player.unblock()
             self.check_evolution()
 
@@ -230,7 +237,7 @@ class Game():
         self.tint_mode = 'tint'
         if character:
             character.character_data['defeated'] = True
-            self.create_dialog(character)
+            self.create_dialog(character,battle_happend=True)
         elif not self.evolution:
             self.player.unblock()
             self.check_evolution()
@@ -263,7 +270,7 @@ class Game():
     def check_monster(self):
         healthy_player_monster: list[Monster] = [ monster for monster in self.player_monsters.values() if monster.health > 10 ]
         monster_patches: list[MonsterPatchSprite] = self.monster_patch_sprites.sprites()
-        if [patch for patch in monster_patches if patch.rect.colliderect(self.player.hitbox)] and not self.battle and self.player.direction and len(healthy_player_monster) >= 3:
+        if [patch for patch in monster_patches if patch.rect.colliderect(self.player.hitbox)] and not self.battle and self.player.direction and healthy_player_monster:
             if not self.encounter_timer.active:
                 self.encounter_timer.activate()
 

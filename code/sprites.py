@@ -268,10 +268,15 @@ class AttackSprite(AnimatedSprite):
 
 class TimedSprite(BaseSprite):
 
-    def __init__(self, pos: tuple[float, float], surf: pygame.Surface, groups: tuple[pygame.sprite.Group], duration: int):
+    def __init__(self, pos: tuple[float, float], surf: pygame.Surface, groups: tuple[pygame.sprite.Group], duration: int, update_all_monster: Callable[[Literal['pause', 'resume']], None]):
         super().__init__(pos, surf, groups, BATTLE_LAYERS['overlay'])
         self.rect.center = pos
-        self.death_timer = Timer(duration,autostart=True,func=self.kill)
+        self.update_all_monster = update_all_monster
+        self.death_timer = Timer(duration,autostart=True,func=self.destroy)
+
+    def destroy(self):
+        self.kill()
+        self.update_all_monster('resume')
 
     def update(self, _, *args, **kwargs):
         super().update(*args, **kwargs)
