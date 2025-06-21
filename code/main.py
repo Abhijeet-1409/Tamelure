@@ -27,13 +27,10 @@ class Game():
 
         # player monsters
         self.player_monsters = {
-            0: Monster("Plumette", 26),
+            0: Monster("Plumette", 6),
             1: Monster("Sparchu", 6),
             2: Monster("Finsta", 7),
         }
-
-        # for monster in list(self.player_monsters.values())[:3]:
-        #     monster.health *= choice([0.8,0.1,0.1])
 
         # groups
         self.all_sprites = AllSprites()

@@ -64,6 +64,10 @@ class Battle():
             for index, monster in { k: v for k, v in monsters.items() if k <= 2}.items():
                 self.create_monster(monster,index,index,entity)
 
+            if entity == 'player':
+                for index, monster in { k: v for k,v in monsters.items() if k > 2 and v.health > 0}.items():
+                    self.available_monsters[index] = monster
+
             # remove opponent monster data
             for i in range(len(self.opponent_sprites)):
                 del self.monster_data['opponent'][i]
@@ -127,12 +131,12 @@ class Battle():
                         self.current_monster_sprite.activate_attack(monster_sprite, self.selection_attack)
                         self.selection_attack, self.current_monster_sprite, self.selection_mode = None, None, None
                     else:
-                        if monster_sprite.monster.health < monster_sprite.monster.get_stat('max_health') * 0.9:
+                        if monster_sprite.monster.health < monster_sprite.monster.get_stat('max_health') * 0.2:
                             self.monster_data['player'][len(self.monster_data['player'])] = monster_sprite.monster
                             monster_sprite.delayed_kill()
                             self.update_all_monster('resume')
                         else:
-                            TimedSprite(monster_sprite.rect.center,self.monster_frames['ui']['cross'],(self.battle_sprites,),1000)
+                            TimedSprite(monster_sprite.rect.center,self.monster_frames['ui']['cross'],(self.battle_sprites,),1000,self.update_all_monster)
 
                 if self.selection_mode == 'attacks':
                     self.selection_mode = 'target'
@@ -150,7 +154,8 @@ class Battle():
                         self.indexes['general'] = 0
 
                     if self.indexes['general'] == 2:
-                        self.selection_mode = 'switch'
+                        if self.available_monsters:
+                            self.selection_mode = 'switch'
 
                     if self.indexes['general'] == 3:
                         self.selection_mode = 'target'
@@ -289,6 +294,9 @@ class Battle():
                 surf: pygame.Surface = pygame.transform.grayscale(self.monster_frames['ui'][f"{data_dict['icon']}"])
             rect = surf.get_frect(center = self.current_monster_sprite.rect.midright + data_dict['pos'])
             self.display_surface.blit(surf,rect)
+            if index == 2 and not self.available_monsters:
+                cross_surf: pygame.Surface = pygame.transform.scale_by(self.monster_frames['ui']['cross'],0.5)
+                self.display_surface.blit(cross_surf,rect)
 
     def draw_attacks(self):
         # data
